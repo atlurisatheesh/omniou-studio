@@ -1,0 +1,90 @@
+# ═══════════════════════════════════════════════════════════════
+# CLONEAI ULTRA — Backend Dependencies
+# ═══════════════════════════════════════════════════════════════
+# INSTALL ORDER MATTERS:
+#   1. Install PyTorch first (see below)
+#   2. Install Chatterbox from source (see below)
+#   3. pip install -r requirements.txt
+#
+# PYTORCH — Install BEFORE this file:
+#   GPU (CUDA 12.1):
+#     pip install torch==2.4.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
+#   CPU only:
+#     pip install torch==2.4.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cpu
+#
+# CHATTERBOX — Install from source (NOT pip):
+#   git clone https://github.com/resemble-ai/chatterbox.git /tmp/chatterbox
+#   cd /tmp/chatterbox && pip install -e .
+# ═══════════════════════════════════════════════════════════════
+
+# ── Core Web Framework ──
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.8.2
+pydantic-settings==2.4.0
+python-dotenv==1.0.1
+python-multipart==0.0.9
+
+# ── Database ──
+sqlalchemy[asyncio]==2.0.35
+asyncpg==0.29.0
+aiosqlite==0.20.0
+alembic==1.13.2
+
+# ── Redis + Celery ──
+celery[redis]==5.4.0
+redis==5.0.8
+
+# ── Storage ──
+minio==7.2.8
+
+# ── Auth / Security ──
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# ── Validation ──
+email-validator==2.2.0
+
+# ── AI / ML — Voice ──
+# NOTE: torch + torchaudio must be installed first (see header)
+# NOTE: chatterbox must be installed from source (see header)
+TTS==0.22.0
+numpy==1.26.4
+scipy==1.14.0
+librosa==0.10.2
+soundfile==0.12.1
+noisereduce==3.0.2
+pyloudnorm==0.1.1
+
+# ── AI / ML — Face & Detection ──
+insightface==0.7.3
+onnxruntime-gpu==1.19.2
+# For CPU-only systems, use instead:
+# onnxruntime==1.19.2
+
+# ── Image Processing ──
+Pillow==10.4.0
+opencv-python-headless==4.10.0.84
+gfpgan==1.3.8
+basicsr==1.4.2
+facexlib==0.3.0
+realesrgan==0.3.0
+
+# ── Video ──
+imageio==2.35.1
+imageio-ffmpeg==0.5.1
+
+# ── Utilities ──
+structlog==24.4.0
+httpx==0.27.2
+aiofiles==24.1.0
+websockets==14.1
+slowapi==0.1.9
+huggingface_hub>=0.23.0
+
+# ── Testing ──
+pytest==8.3.4
+pytest-asyncio==0.25.0
+
+# ── Optional: Progress bars for model downloads ──
+tqdm>=4.66.0

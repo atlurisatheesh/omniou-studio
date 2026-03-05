@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.next/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# AI Models (large files)
+models/
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+
+# Uploads and outputs
+uploads/
+outputs/
+temp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
