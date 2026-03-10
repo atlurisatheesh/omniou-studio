@@ -14,7 +14,7 @@ build/
 .env.production
 
 # AI Models (large files)
-models/
+/models/
 *.pt
 *.pth
 *.bin

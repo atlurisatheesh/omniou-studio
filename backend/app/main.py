@@ -18,7 +18,13 @@ from fastapi.staticfiles import StaticFiles
 from .config import settings
 from .models.database import init_db
 from .routers import admin, clone, health, script, upload, user, video, voice
+from .routers import auth as auth_router
+from .routers import analytics as analytics_router
+from .routers import templates as templates_router
+from .routers import streaming as streaming_router
+from .routers import multi_face as multi_face_router
 from .services.model_manager import ModelManager
+from .utils.ws_manager import ws_manager
 
 load_dotenv()
 
@@ -50,9 +56,14 @@ async def lifespan(app: FastAPI):
     )
     logger.info("cloneai.startup", msg="Model manager initialized", device=settings.DEVICE)
 
+    # Start WebSocket heartbeat manager
+    ws_manager.start()
+    logger.info("cloneai.startup", msg="WebSocket manager started")
+
     yield
 
     # Cleanup
+    ws_manager.stop()
     logger.info("cloneai.shutdown", msg="Shutting down CloneAI Ultra backend...")
     if hasattr(app.state, "model_manager"):
         app.state.model_manager.unload_all()
@@ -92,6 +103,11 @@ app.include_router(video.router, prefix="/api/v1", tags=["Video"])
 app.include_router(script.router, prefix="/api/v1", tags=["Script"])
 app.include_router(user.router, prefix="/api/v1", tags=["User"])
 app.include_router(admin.router, prefix="/api/v1", tags=["Admin"])
+app.include_router(auth_router.router, prefix="/api/v1", tags=["Auth"])
+app.include_router(analytics_router.router, prefix="/api/v1", tags=["Analytics"])
+app.include_router(templates_router.router, prefix="/api/v1", tags=["Templates"])
+app.include_router(streaming_router.router, prefix="/api/v1", tags=["Streaming"])
+app.include_router(multi_face_router.router, prefix="/api/v1", tags=["MultiFace"])
 
 
 @app.get("/")

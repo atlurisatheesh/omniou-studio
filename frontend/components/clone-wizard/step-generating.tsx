@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useCloneStore } from "@/lib/store";
 import {
   createClone,
   connectProgressWebSocket,
   getVideoDownloadUrl,
+  cancelClone,
 } from "@/lib/api";
+import { LivePreview } from "@/components/streaming/LivePreview";
 import {
   Loader2,
   Download,
@@ -18,6 +20,7 @@ import {
   Sparkles,
   Clapperboard,
   Wand2,
+  XCircle,
 } from "lucide-react";
 
 const STEP_LABELS: Record<string, { label: string; icon: typeof Mic }> = {
@@ -32,12 +35,17 @@ const STEP_LABELS: Record<string, { label: string; icon: typeof Mic }> = {
   failed: { label: "Generation failed", icon: AlertTriangle },
 };
 
+const PIPELINE_STEPS = ["voice_cloning", "face_animating", "lip_syncing", "enhancing", "encoding"];
+const MAX_RECONNECT = 5;
+
 export function StepGenerating() {
   const {
     photoPath,
     voicePath,
     scriptText,
     targetLanguage,
+    emotion,
+    background,
     jobId,
     jobStatus,
     jobProgress,
@@ -50,9 +58,52 @@ export function StepGenerating() {
   } = useCloneStore();
 
   const wsRef = useRef<WebSocket | null>(null);
+  const reconnectRef = useRef(0);
   const [started, setStarted] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
-  // Start generation on mount
+  const connectWs = useCallback(
+    (id: string) => {
+      if (reconnectRef.current >= MAX_RECONNECT) return;
+
+      wsRef.current = connectProgressWebSocket(
+        id,
+        (data) => {
+          reconnectRef.current = 0;
+          updateJobProgress(
+            data.status,
+            data.progress,
+            data.step,
+            data.error || null,
+            data.download_url || data.result_url || null
+          );
+          if (data.step === "face_animating" || data.step === "lip_syncing") {
+            setShowPreview(true);
+          }
+        },
+        () => {
+          // Exponential backoff reconnect
+          reconnectRef.current++;
+          const delay = Math.min(1000 * 2 ** reconnectRef.current, 16000);
+          setTimeout(() => connectWs(id), delay);
+        },
+        () => {
+          // On close — reconnect unless completed/failed
+          const st = useCloneStore.getState().jobStatus;
+          if (st !== "completed" && st !== "failed") {
+            reconnectRef.current++;
+            if (reconnectRef.current < MAX_RECONNECT) {
+              const delay = Math.min(1000 * 2 ** reconnectRef.current, 16000);
+              setTimeout(() => connectWs(id), delay);
+            }
+          }
+        }
+      );
+    },
+    [updateJobProgress]
+  );
+
   useEffect(() => {
     if (started || jobId) return;
     setStarted(true);
@@ -64,31 +115,13 @@ export function StepGenerating() {
           voice_path: voicePath!,
           script_text: scriptText,
           target_language: targetLanguage,
+          emotion,
+          background,
         });
 
         setJob(result.job_id);
-
-        // Connect WebSocket for progress
-        wsRef.current = connectProgressWebSocket(
-          result.job_id,
-          (data) => {
-            updateJobProgress(
-              data.status,
-              data.progress,
-              data.step,
-              data.error || null,
-              (data as any).download_url || null
-            );
-          },
-          () => {
-            console.error("WebSocket error");
-          },
-          () => {
-            console.log("WebSocket closed");
-          }
-        );
+        connectWs(result.job_id);
       } catch (err: any) {
-        // If backend is unavailable, simulate progress for demo
         console.warn("Backend unavailable, simulating progress:", err);
         simulateProgress();
       }
@@ -102,7 +135,6 @@ export function StepGenerating() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Demo simulation when backend is not available
   const simulateProgress = () => {
     const steps = [
       { status: "processing", progress: 5, step: "initializing" },
@@ -117,18 +149,28 @@ export function StepGenerating() {
     ];
 
     setJob("demo-" + Date.now());
-
     steps.forEach((s, i) => {
-      setTimeout(() => {
-        updateJobProgress(s.status, s.progress, s.step);
-      }, (i + 1) * 2000);
+      setTimeout(() => updateJobProgress(s.status, s.progress, s.step), (i + 1) * 2000);
     });
+  };
+
+  const handleCancel = async () => {
+    if (!jobId || cancelling) return;
+    setCancelling(true);
+    try {
+      await cancelClone(jobId);
+      wsRef.current?.close();
+      updateJobProgress("failed", jobProgress, jobStep, "Cancelled by user");
+    } catch {
+      setCancelling(false);
+    }
   };
 
   const stepInfo = STEP_LABELS[jobStep] || STEP_LABELS.queued;
   const StepIcon = stepInfo.icon;
   const isCompleted = jobStatus === "completed";
   const isFailed = jobStatus === "failed";
+  const isProcessing = !isCompleted && !isFailed;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -144,6 +186,11 @@ export function StepGenerating() {
             : "Our AI pipeline is working. This usually takes 60-90 seconds."}
         </p>
       </div>
+
+      {/* Live Preview */}
+      {showPreview && jobId && isProcessing && (
+        <LivePreview jobId={jobId} className="max-w-md mx-auto" />
+      )}
 
       {/* Progress ring */}
       <div className="flex justify-center">
@@ -188,61 +235,59 @@ export function StepGenerating() {
 
       {/* Pipeline steps */}
       <div className="bg-card border border-border rounded-xl p-6 space-y-3">
-        {["voice_cloning", "face_animating", "lip_syncing", "enhancing", "encoding"].map(
-          (step) => {
-            const info = STEP_LABELS[step];
-            const stepIdx = [
-              "voice_cloning",
-              "face_animating",
-              "lip_syncing",
-              "enhancing",
-              "encoding",
-            ].indexOf(step);
-            const currentIdx = [
-              "voice_cloning",
-              "face_animating",
-              "lip_syncing",
-              "enhancing",
-              "encoding",
-            ].indexOf(jobStep);
-            const isDone = isCompleted || currentIdx > stepIdx;
-            const isCurrent = jobStep === step;
+        {PIPELINE_STEPS.map((step) => {
+          const info = STEP_LABELS[step];
+          const stepIdx = PIPELINE_STEPS.indexOf(step);
+          const currentIdx = PIPELINE_STEPS.indexOf(jobStep);
+          const isDone = isCompleted || currentIdx > stepIdx;
+          const isCurrent = jobStep === step;
 
-            return (
-              <div key={step} className="flex items-center gap-3">
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    isDone
-                      ? "bg-green-500/20 text-green-400"
-                      : isCurrent
-                      ? "bg-primary/20 text-primary"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {isDone ? (
-                    <CheckCircle className="w-3.5 h-3.5" />
-                  ) : isCurrent ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
-                  )}
-                </div>
-                <span
-                  className={`text-sm ${
-                    isDone
-                      ? "text-green-400"
-                      : isCurrent
-                      ? "text-foreground font-medium"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {info.label.replace("...", "")}
-                </span>
+          return (
+            <div key={step} className="flex items-center gap-3">
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  isDone
+                    ? "bg-green-500/20 text-green-400"
+                    : isCurrent
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {isDone ? (
+                  <CheckCircle className="w-3.5 h-3.5" />
+                ) : isCurrent ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                )}
               </div>
-            );
-          }
-        )}
+              <span
+                className={`text-sm ${
+                  isDone
+                    ? "text-green-400"
+                    : isCurrent
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {info.label.replace("...", "")}
+              </span>
+            </div>
+          );
+        })}
       </div>
+
+      {/* Cancel button during processing */}
+      {isProcessing && (
+        <button
+          onClick={handleCancel}
+          disabled={cancelling}
+          className="w-full flex items-center justify-center gap-2 py-3 border border-red-500/30 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition disabled:opacity-50"
+        >
+          <XCircle className="w-4 h-4" />
+          {cancelling ? "Cancelling…" : "Cancel Generation"}
+        </button>
+      )}
 
       {/* Actions */}
       {isCompleted && (
@@ -277,6 +322,8 @@ export function StepGenerating() {
                 jobError: null,
               });
               setStarted(false);
+              setCancelling(false);
+              reconnectRef.current = 0;
             }}
             className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition"
           >

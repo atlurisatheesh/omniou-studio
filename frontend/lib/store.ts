@@ -1,5 +1,5 @@
 /**
- * CLONEAI PRO — Global State Store (Zustand)
+ * CLONEAI PRO — Global State Store (Zustand) — Phase 12
  */
 
 import { create } from "zustand";
@@ -42,7 +42,19 @@ interface CloneState {
   jobError: string | null;
   resultUrl: string | null;
   setJob: (id: string) => void;
+  setJobProgress: (progress: number) => void;
+  setJobStep: (step: string) => void;
+  setJobError: (error: string | null) => void;
+  setResultUrl: (url: string | null) => void;
   updateJobProgress: (status: string, progress: number, step: string, error?: string | null, resultUrl?: string | null) => void;
+
+  // Template (Phase 12)
+  applyTemplate: (template: {
+    script_text: string;
+    language: string;
+    emotion: string;
+    background: string;
+  }) => void;
 
   // Reset
   reset: () => void;
@@ -84,8 +96,22 @@ export const useCloneStore = create<CloneState>((set) => ({
   jobError: null,
   resultUrl: null,
   setJob: (id) => set({ jobId: id, jobStatus: "queued", jobProgress: 0, jobStep: "queued" }),
+  setJobProgress: (progress) => set({ jobProgress: progress }),
+  setJobStep: (step) => set({ jobStep: step }),
+  setJobError: (error) => set({ jobError: error }),
+  setResultUrl: (url) => set({ resultUrl: url }),
   updateJobProgress: (status, progress, step, error = null, resultUrl = null) =>
     set({ jobStatus: status, jobProgress: progress, jobStep: step, jobError: error, resultUrl }),
+
+  // Template (Phase 12)
+  applyTemplate: (template) =>
+    set({
+      scriptText: template.script_text,
+      targetLanguage: template.language,
+      emotion: template.emotion,
+      background: template.background,
+      currentStep: "script",
+    }),
 
   // Reset
   reset: () =>

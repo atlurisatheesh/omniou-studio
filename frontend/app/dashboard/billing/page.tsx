@@ -7,10 +7,6 @@ import {
   Video,
   Mic,
   Camera,
-  LayoutDashboard,
-  Settings,
-  CreditCard,
-  LogOut,
   Check,
   Sparkles,
   Zap,
@@ -74,46 +70,7 @@ export default function BillingPage() {
   const [selectedPlan] = useState("Free");
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-border bg-card p-6 sticky top-0 h-screen">
-        <Link href="/" className="flex items-center gap-2 mb-10">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center">
-            <Video className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-lg">CloneAI Pro</span>
-        </Link>
-        <nav className="flex-1 space-y-1">
-          {[
-            { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", active: false },
-            { icon: Plus, label: "Create Clone", href: "/dashboard/create", active: false },
-            { icon: Mic, label: "Voice Library", href: "/dashboard/voice-library", active: false },
-            { icon: Camera, label: "Avatars", href: "/dashboard/avatars", active: false },
-            { icon: Settings, label: "Settings", href: "/dashboard/settings", active: false },
-            { icon: CreditCard, label: "Billing", href: "/dashboard/billing", active: true },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${
-                item.active
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <button className="flex items-center gap-3 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition mt-auto">
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </button>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 p-6 md:p-10 max-w-5xl">
+    <div className="space-y-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold">Billing & Plans</h1>
@@ -243,7 +200,6 @@ export default function BillingPage() {
             </a>
           </div>
         </section>
-      </main>
     </div>
   );
 }
