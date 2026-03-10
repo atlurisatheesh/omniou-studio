@@ -129,6 +129,7 @@ export function StepUploadVoice() {
             </div>
             <button
               onClick={clearVoice}
+              title="Remove voice"
               className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center hover:bg-red-500/20 transition"
             >
               <X className="w-4 h-4 text-red-400" />

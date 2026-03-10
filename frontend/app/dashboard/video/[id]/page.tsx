@@ -151,6 +151,7 @@ export default function VideoDetailPage() {
                           const el = document.getElementById("video-player") as HTMLVideoElement;
                           el?.play();
                         }}
+                        title="Play video"
                         className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/30 transition group"
                       >
                         <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -332,7 +333,7 @@ export default function VideoDetailPage() {
                 <RotateCcw className="w-4 h-4" />
                 New Video
               </Link>
-              <button className="px-4 py-3 bg-card border border-border rounded-xl text-sm hover:bg-red-500/10 hover:border-red-500/50 transition">
+              <button title="Delete video" className="px-4 py-3 bg-card border border-border rounded-xl text-sm hover:bg-red-500/10 hover:border-red-500/50 transition">
                 <Trash2 className="w-4 h-4 text-red-400" />
               </button>
             </div>

@@ -186,6 +186,7 @@ export function AudioRecorder({
         {!recording && !audioUrl && (
           <button
             onClick={startRecording}
+            title="Start recording"
             className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 transition flex items-center justify-center shadow-lg shadow-red-500/30"
           >
             <Mic className="w-6 h-6 text-white" />
@@ -196,12 +197,14 @@ export function AudioRecorder({
           <>
             <button
               onClick={togglePause}
+              title={paused ? "Resume" : "Pause"}
               className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center hover:bg-accent transition"
             >
               {paused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
             </button>
             <button
               onClick={stopRecording}
+              title="Stop recording"
               className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 transition flex items-center justify-center shadow-lg shadow-red-500/30"
             >
               <Square className="w-5 h-5 text-white" />
@@ -213,12 +216,14 @@ export function AudioRecorder({
           <>
             <button
               onClick={togglePlayback}
+              title={playing ? "Pause playback" : "Play recording"}
               className="w-12 h-12 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-primary/20 transition"
             >
               {playing ? <Pause className="w-5 h-5 text-primary" /> : <Play className="w-5 h-5 text-primary ml-0.5" />}
             </button>
             <button
               onClick={deleteRecording}
+              title="Delete recording"
               className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center hover:bg-red-500/20 transition"
             >
               <Trash2 className="w-5 h-5 text-red-400" />

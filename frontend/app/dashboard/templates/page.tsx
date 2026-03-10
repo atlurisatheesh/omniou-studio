@@ -256,6 +256,7 @@ export default function TemplatesPage() {
           <div className="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-4 relative">
             <button
               onClick={() => setPreview(null)}
+              title="Close preview"
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
             >
               <X className="w-5 h-5" />

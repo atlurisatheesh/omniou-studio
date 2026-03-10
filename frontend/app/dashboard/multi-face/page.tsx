@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   LayoutGrid,
   List,
-  Spotlight,
+  Star,
 } from "lucide-react";
 
 interface PersonEntry {
@@ -31,7 +31,7 @@ interface PersonEntry {
 const LAYOUTS = [
   { value: "sequential", label: "Sequential", icon: List, desc: "Each person speaks in turn" },
   { value: "grid", label: "Grid", icon: LayoutGrid, desc: "All faces visible at once" },
-  { value: "spotlight", label: "Spotlight", icon: Spotlight, desc: "Active speaker highlighted" },
+  { value: "spotlight", label: "Spotlight", icon: Star, desc: "Active speaker highlighted" },
 ];
 
 function createPerson(): PersonEntry {
@@ -203,6 +203,7 @@ export default function MultiFacePage() {
               {persons.length > 2 && (
                 <button
                   onClick={() => removePerson(person.id)}
+                  title="Remove person"
                   className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -260,6 +261,7 @@ export default function MultiFacePage() {
               <select
                 value={person.language}
                 onChange={(e) => updatePerson(person.id, { language: e.target.value })}
+                title="Language"
                 className="flex-1 p-2 bg-card border border-border rounded-lg text-sm"
               >
                 <option value="en">English</option>
@@ -274,6 +276,7 @@ export default function MultiFacePage() {
               <select
                 value={person.emotion}
                 onChange={(e) => updatePerson(person.id, { emotion: e.target.value })}
+                title="Emotion"
                 className="flex-1 p-2 bg-card border border-border rounded-lg text-sm"
               >
                 <option value="neutral">Neutral</option>

@@ -115,6 +115,7 @@ export function StepUploadPhoto() {
           </div>
           <button
             onClick={clearPhoto}
+            title="Remove photo"
             className="absolute top-2 right-2 w-8 h-8 bg-red-500/80 rounded-full flex items-center justify-center hover:bg-red-500 transition"
           >
             <X className="w-4 h-4 text-white" />

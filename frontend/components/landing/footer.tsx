@@ -86,10 +86,10 @@ export function Footer() {
             {new Date().getFullYear()} CloneAI Pro. Open source under MIT license.
           </p>
           <div className="flex items-center gap-4">
-            <a href="https://github.com/cloneai-pro" target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground transition">
+            <a href="https://github.com/cloneai-pro" target="_blank" rel="noopener" title="GitHub" className="text-muted-foreground hover:text-foreground transition">
               <Github className="w-4 h-4" />
             </a>
-            <a href="https://twitter.com/cloneai_pro" target="_blank" rel="noopener" className="text-muted-foreground hover:text-foreground transition">
+            <a href="https://twitter.com/cloneai_pro" target="_blank" rel="noopener" title="Twitter" className="text-muted-foreground hover:text-foreground transition">
               <Twitter className="w-4 h-4" />
             </a>
           </div>
