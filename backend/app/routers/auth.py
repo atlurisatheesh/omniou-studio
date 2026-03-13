@@ -32,28 +32,23 @@ def _user_response(user: User) -> UserResponse:
     return UserResponse(
         id=str(user.id),
         name=user.name,
-        email=user.email,
         phone=user.phone,
+        email=user.email,
         language=user.language,
         region=user.region,
-        plan=user.plan,
-        farm_size_acres=user.farm_size_acres,
-        primary_crops=user.primary_crops,
-        soil_type=user.soil_type,
-        irrigation_type=user.irrigation_type,
     )
 
 
 @router.post("/register", response_model=TokenResponse)
 async def register(body: UserCreate, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(select(User).where(User.email == body.email))
+    existing = await db.execute(select(User).where(User.phone == body.phone))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Phone already registered")
 
     user = User(
         name=body.name,
-        email=body.email,
         phone=body.phone,
+        email=body.email,
         language=body.language,
         region=body.region,
         hashed_password=pwd_context.hash(body.password),
@@ -70,11 +65,11 @@ async def register(body: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(body: UserLogin, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == body.email))
+    result = await db.execute(select(User).where(User.phone == body.phone))
     user = result.scalar_one_or_none()
 
     if not user or not user.hashed_password or not pwd_context.verify(body.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Invalid phone or password")
 
     return TokenResponse(
         access_token=_create_token(str(user.id)),

@@ -13,32 +13,32 @@ import {
 import { api } from "@/lib/api";
 
 interface SoilParam {
-  parameter: string;
-  value: number;
-  unit: string;
+  nutrient: string;
+  current_value: number;
+  optimal_range: string;
   status: string;
-  ideal_range: string;
+  recommendation: string;
+  quantity_per_acre: string;
 }
 
 interface SoilResult {
-  overall_score: number;
-  health_status: string;
-  parameters: SoilParam[];
-  recommendations: Array<{ crop: string; fertilizer: string; quantity: string }>;
+  overall_health_score: number;
+  deficiencies: SoilParam[];
+  recommendations: string[];
 }
 
 const SOIL_FIELDS = [
   { key: "ph", label: "pH", placeholder: "6.5", unit: "" },
-  { key: "nitrogen", label: "Nitrogen (N)", placeholder: "280", unit: "kg/ha" },
-  { key: "phosphorus", label: "Phosphorus (P)", placeholder: "22", unit: "kg/ha" },
-  { key: "potassium", label: "Potassium (K)", placeholder: "200", unit: "kg/ha" },
-  { key: "organic_carbon", label: "Organic Carbon", placeholder: "0.6", unit: "%" },
-  { key: "ec", label: "EC", placeholder: "0.5", unit: "dS/m" },
-  { key: "zinc", label: "Zinc (Zn)", placeholder: "1.2", unit: "ppm" },
-  { key: "iron", label: "Iron (Fe)", placeholder: "5.0", unit: "ppm" },
-  { key: "manganese", label: "Manganese (Mn)", placeholder: "3.0", unit: "ppm" },
-  { key: "boron", label: "Boron (B)", placeholder: "0.7", unit: "ppm" },
-  { key: "sulphur", label: "Sulphur (S)", placeholder: "12", unit: "ppm" },
+  { key: "nitrogen_kg_ha", label: "Nitrogen (N)", placeholder: "280", unit: "kg/ha" },
+  { key: "phosphorus_kg_ha", label: "Phosphorus (P)", placeholder: "22", unit: "kg/ha" },
+  { key: "potassium_kg_ha", label: "Potassium (K)", placeholder: "200", unit: "kg/ha" },
+  { key: "organic_carbon_pct", label: "Organic Carbon", placeholder: "0.6", unit: "%" },
+  { key: "ec_ds_m", label: "EC", placeholder: "0.5", unit: "dS/m" },
+  { key: "zinc_ppm", label: "Zinc (Zn)", placeholder: "1.2", unit: "ppm" },
+  { key: "iron_ppm", label: "Iron (Fe)", placeholder: "5.0", unit: "ppm" },
+  { key: "manganese_ppm", label: "Manganese (Mn)", placeholder: "3.0", unit: "ppm" },
+  { key: "boron_ppm", label: "Boron (B)", placeholder: "0.7", unit: "ppm" },
+  { key: "sulphur_ppm", label: "Sulphur (S)", placeholder: "12", unit: "ppm" },
 ];
 
 export default function SoilHealthPage() {
@@ -72,8 +72,8 @@ export default function SoilHealthPage() {
   };
 
   const statusIcon = (status: string) => {
-    if (status === "High") return <TrendingUp className="w-4 h-4 text-amber-500" />;
-    if (status === "Low") return <TrendingDown className="w-4 h-4 text-red-500" />;
+    if (status === "excess") return <TrendingUp className="w-4 h-4 text-amber-500" />;
+    if (status === "deficient") return <TrendingDown className="w-4 h-4 text-red-500" />;
     return <Minus className="w-4 h-4 text-green-500" />;
   };
 
@@ -81,6 +81,12 @@ export default function SoilHealthPage() {
     if (score >= 80) return "text-green-600";
     if (score >= 60) return "text-amber-600";
     return "text-red-600";
+  };
+
+  const healthLabel = (score: number) => {
+    if (score >= 80) return "Healthy Soil";
+    if (score >= 60) return "Moderate — Needs Attention";
+    return "Poor — Immediate Action Needed";
   };
 
   return (
@@ -143,22 +149,22 @@ export default function SoilHealthPage() {
         <div className="space-y-6">
           {/* Score */}
           <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
-            <div className={`text-6xl font-extrabold ${scoreColor(result.overall_score)}`}>
-              {result.overall_score}
+            <div className={`text-6xl font-extrabold ${scoreColor(result.overall_health_score)}`}>
+              {result.overall_health_score}
             </div>
             <div className="text-lg font-semibold text-gray-700 mt-1">
-              {result.health_status}
+              {healthLabel(result.overall_health_score)}
             </div>
             <div className="w-full max-w-md mx-auto mt-4 bg-gray-100 rounded-full h-4">
               <div
                 className={`h-4 rounded-full transition-all ${
-                  result.overall_score >= 80
+                  result.overall_health_score >= 80
                     ? "bg-green-500"
-                    : result.overall_score >= 60
+                    : result.overall_health_score >= 60
                     ? "bg-amber-500"
                     : "bg-red-500"
                 }`}
-                style={{ width: `${result.overall_score}%` }}
+                style={{ width: `${result.overall_health_score}%` }}
               />
             </div>
           </div>
@@ -176,24 +182,26 @@ export default function SoilHealthPage() {
                     <th className="text-left px-6 py-3">Your Value</th>
                     <th className="text-left px-6 py-3">Ideal Range</th>
                     <th className="text-left px-6 py-3">Status</th>
+                    <th className="text-left px-6 py-3">Recommendation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {result.parameters.map((p) => (
-                    <tr key={p.parameter} className="hover:bg-gray-50">
+                  {result.deficiencies.map((p) => (
+                    <tr key={p.nutrient} className="hover:bg-gray-50">
                       <td className="px-6 py-3 font-medium text-gray-700">
-                        {p.parameter}
+                        {p.nutrient}
                       </td>
                       <td className="px-6 py-3">
-                        {p.value} {p.unit}
+                        {p.current_value}
                       </td>
-                      <td className="px-6 py-3 text-gray-500">{p.ideal_range}</td>
+                      <td className="px-6 py-3 text-gray-500">{p.optimal_range}</td>
                       <td className="px-6 py-3">
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 capitalize">
                           {statusIcon(p.status)}
                           {p.status}
                         </span>
                       </td>
+                      <td className="px-6 py-3 text-gray-500 text-xs">{p.quantity_per_acre}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -205,23 +213,16 @@ export default function SoilHealthPage() {
           {result.recommendations.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-100 p-6">
               <h3 className="font-bold text-gray-900 mb-4">
-                Fertilizer Recommendations
+                Recommendations
               </h3>
-              <div className="grid md:grid-cols-2 gap-3">
+              <div className="space-y-3">
                 {result.recommendations.map((rec, i) => (
                   <div
                     key={i}
                     className="flex items-start gap-3 p-4 bg-agri-50 rounded-lg"
                   >
                     <CheckCircle2 className="w-5 h-5 text-agri-600 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold text-gray-800 capitalize">
-                        {rec.crop}:
-                      </span>{" "}
-                      <span className="text-gray-600">
-                        {rec.fertilizer} — {rec.quantity}
-                      </span>
-                    </div>
+                    <p className="text-gray-600">{rec}</p>
                   </div>
                 ))}
               </div>

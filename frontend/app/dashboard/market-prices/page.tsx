@@ -13,11 +13,27 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 
+interface MarketPrice {
+  commodity: string;
+  market_name: string;
+  state: string;
+  district: string;
+  min_price: number;
+  max_price: number;
+  modal_price: number;
+  arrival_date: string;
+  trend: string;
+  trend_pct: number;
+}
+
 interface PriceData {
   commodity: string;
-  msp: number;
-  prices: Array<{ market: string; price: number; trend: string }>;
-  best_market: { market: string; price: number };
+  msp: string;
+  avg_price: number;
+  prices: MarketPrice[];
+  best_market: string;
+  price_trend_7d: string;
+  advisory: string;
 }
 
 interface Advisory {
@@ -26,15 +42,27 @@ interface Advisory {
   details: Record<string, unknown>;
 }
 
+interface CommodityInfo {
+  key: string;
+  name: string;
+  msp: number | null;
+  markets_count: number;
+}
+
 export default function MarketPricesPage() {
-  const [commodities, setCommodities] = useState<string[]>([]);
+  const [commodities, setCommodities] = useState<CommodityInfo[]>([]);
   const [selected, setSelected] = useState("");
   const [priceData, setPriceData] = useState<PriceData | null>(null);
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    api.market.commodities().then((r) => setCommodities(r.commodities));
+    api.market.commodities().then((r) => {
+      setCommodities(r.commodities);
+      if (r.commodities.length > 0) {
+        loadPrices(r.commodities[0].key);
+      }
+    });
   }, []);
 
   const loadPrices = async (commodity: string) => {
@@ -81,15 +109,15 @@ export default function MarketPricesPage() {
         <div className="flex flex-wrap gap-2">
           {commodities.map((c) => (
             <button
-              key={c}
-              onClick={() => loadPrices(c)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition ${
-                selected === c
+              key={c.key}
+              onClick={() => loadPrices(c.key)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                selected === c.key
                   ? "bg-purple-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {c}
+              {c.name}
             </button>
           ))}
         </div>
@@ -110,10 +138,10 @@ export default function MarketPricesPage() {
                 Minimum Support Price (MSP)
               </p>
               <div className="text-4xl font-extrabold mt-1">
-                ₹{priceData.msp.toLocaleString("en-IN")}
+                {priceData.msp}
               </div>
               <p className="text-purple-200 text-sm mt-1 capitalize">
-                per quintal — {priceData.commodity}
+                {priceData.commodity}
               </p>
             </div>
 
@@ -121,11 +149,11 @@ export default function MarketPricesPage() {
               <p className="text-green-200 text-sm flex items-center gap-1">
                 <Star className="w-4 h-4" /> Best Market Today
               </p>
-              <div className="text-4xl font-extrabold mt-1">
-                ₹{priceData.best_market.price.toLocaleString("en-IN")}
+              <div className="text-3xl font-extrabold mt-1">
+                {priceData.best_market}
               </div>
               <p className="text-green-200 text-sm mt-1">
-                {priceData.best_market.market}
+                Avg ₹{priceData.avg_price?.toLocaleString("en-IN")}/qtl
               </p>
             </div>
           </div>
@@ -140,46 +168,40 @@ export default function MarketPricesPage() {
                 <thead className="bg-gray-50 text-gray-500">
                   <tr>
                     <th className="text-left px-6 py-3">Market</th>
-                    <th className="text-left px-6 py-3">Price (₹/qtl)</th>
-                    <th className="text-left px-6 py-3">vs MSP</th>
+                    <th className="text-left px-6 py-3">Min (₹/qtl)</th>
+                    <th className="text-left px-6 py-3">Max (₹/qtl)</th>
+                    <th className="text-left px-6 py-3">Modal (₹/qtl)</th>
                     <th className="text-left px-6 py-3">Trend</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {priceData.prices.map((p) => {
-                    const diff = p.price - priceData.msp;
-                    const pct = ((diff / priceData.msp) * 100).toFixed(1);
+                  {priceData.prices.map((p, idx) => {
+                    const isBest = priceData.best_market.includes(p.market_name);
                     return (
                       <tr
-                        key={p.market}
+                        key={`${p.market_name}-${idx}`}
                         className={`hover:bg-gray-50 ${
-                          p.market === priceData.best_market.market
-                            ? "bg-green-50/50"
-                            : ""
+                          isBest ? "bg-green-50/50" : ""
                         }`}
                       >
                         <td className="px-6 py-3 font-medium text-gray-700">
-                          {p.market}
-                          {p.market === priceData.best_market.market && (
+                          {p.market_name}, {p.district}
+                          {isBest && (
                             <Star className="w-3.5 h-3.5 text-amber-400 inline ml-1" />
                           )}
                         </td>
-                        <td className="px-6 py-3 font-semibold">
-                          ₹{p.price.toLocaleString("en-IN")}
+                        <td className="px-6 py-3">
+                          ₹{p.min_price.toLocaleString("en-IN")}
                         </td>
                         <td className="px-6 py-3">
-                          <span
-                            className={`text-sm font-medium ${
-                              diff >= 0 ? "text-green-600" : "text-red-600"
-                            }`}
-                          >
-                            {diff >= 0 ? "+" : ""}
-                            {pct}%
-                          </span>
+                          ₹{p.max_price.toLocaleString("en-IN")}
+                        </td>
+                        <td className="px-6 py-3 font-semibold">
+                          ₹{p.modal_price.toLocaleString("en-IN")}
                         </td>
                         <td className="px-6 py-3">
                           <span className="flex items-center gap-1 capitalize">
-                            {trendIcon(p.trend)} {p.trend}
+                            {trendIcon(p.trend)} {p.trend} ({p.trend_pct > 0 ? "+" : ""}{p.trend_pct}%)
                           </span>
                         </td>
                       </tr>

@@ -150,12 +150,14 @@ def analyze_soil(data: dict, target_crop: str | None = None) -> dict:
         )
 
     # Universal recommendations
-    if data.get("organic_carbon_pct", 0.5) < 0.5:
+    oc = data.get("organic_carbon_pct") or 0.5
+    if oc < 0.5:
         recommendations.append("🔴 Critical: Build organic carbon with green manuring (dhaincha/sunhemp), FYM, and crop residue incorporation.")
 
-    if data.get("ph", 7) < 5.5:
+    ph = data.get("ph") or 7
+    if ph < 5.5:
         recommendations.append("Apply lime 4-6 weeks before sowing for best results.")
-    elif data.get("ph", 7) > 8.5:
+    elif ph > 8.5:
         recommendations.append("Use acidifying fertilizers like ammonium sulphate instead of urea.")
 
     recommendations.append("Test soil every 2 seasons to track improvements. Take 10+ samples from field at 6-inch depth, mix, and send 500g.")

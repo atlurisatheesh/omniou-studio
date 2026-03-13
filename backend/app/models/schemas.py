@@ -4,35 +4,30 @@ AGRISENSE — Pydantic Schemas
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 # ── Auth ──
 
 class UserCreate(BaseModel):
     name: str
-    email: EmailStr
+    phone: str
     password: str
-    phone: Optional[str] = None
+    email: Optional[str] = None
     language: str = "en"
     region: Optional[str] = None
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    phone: str
     password: str
 
 class UserResponse(BaseModel):
     id: str
     name: str
-    email: str
-    phone: Optional[str] = None
-    language: str
+    phone: str
+    email: Optional[str] = None
+    language: str = "en"
     region: Optional[str] = None
-    plan: str
-    farm_size_acres: Optional[float] = None
-    primary_crops: Optional[str] = None
-    soil_type: Optional[str] = None
-    irrigation_type: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str

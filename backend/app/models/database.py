@@ -54,8 +54,8 @@ class User(Base):
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, nullable=False, index=True)
-    phone = Column(String(20), nullable=True, index=True)
+    email = Column(String(255), unique=True, nullable=True, index=True)
+    phone = Column(String(20), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=True)
     language = Column(String(10), default="en")  # en, hi, te, ta, kn, mr, bn, pa
     region = Column(String(100), nullable=True)   # State/District
