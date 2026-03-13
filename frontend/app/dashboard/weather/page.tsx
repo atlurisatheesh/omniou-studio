@@ -6,7 +6,6 @@ import {
   Thermometer,
   Droplets,
   Wind,
-  Eye,
   Bug,
   Loader2,
   AlertTriangle,
@@ -17,25 +16,30 @@ import { api } from "@/lib/api";
 
 interface WeatherData {
   current: {
-    temp: number;
-    humidity: number;
-    wind_speed: number;
+    temp_c: number;
+    feels_like_c: number;
+    humidity_pct: number;
+    wind_speed_kmh: number;
     description: string;
-    visibility: number;
+    icon: string;
+    rain_mm: number;
   };
   forecast: Array<{
     date: string;
-    temp_max: number;
-    temp_min: number;
-    humidity: number;
+    temp_max_c: number;
+    temp_min_c: number;
+    humidity_pct: number;
+    rain_mm: number;
     description: string;
-    rain_chance: number;
+    icon: string;
+    spray_window: boolean;
+    spray_reason: string;
   }>;
   pest_risks: Array<{
     pest: string;
     risk: string;
-    affected_crops: string[];
-    conditions: string;
+    crops: string[];
+    advisory: string;
   }>;
 }
 
@@ -57,7 +61,7 @@ export default function WeatherPage() {
         api.weather.sprayWindow(),
       ]);
       setWeather(w as WeatherData);
-      setSprayWindows((s as { windows: Array<Record<string, unknown>> }).windows || []);
+      setSprayWindows((s as { spray_windows: Array<Record<string, unknown>> }).spray_windows || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load weather");
     } finally {
@@ -66,8 +70,8 @@ export default function WeatherPage() {
   };
 
   const riskColor = (risk: string) => {
-    if (risk === "HIGH") return "bg-red-50 text-red-700 border-red-200";
-    if (risk === "MEDIUM") return "bg-amber-50 text-amber-700 border-amber-200";
+    if (risk.toLowerCase() === "high") return "bg-red-50 text-red-700 border-red-200";
+    if (risk.toLowerCase() === "medium") return "bg-amber-50 text-amber-700 border-amber-200";
     return "bg-green-50 text-green-700 border-green-200";
   };
 
@@ -107,7 +111,7 @@ export default function WeatherPage() {
               <div>
                 <p className="text-blue-200 text-sm mb-1">Current Weather</p>
                 <div className="text-6xl font-extrabold">
-                  {weather.current.temp}°C
+                  {weather.current.temp_c}°C
                 </div>
                 <p className="text-blue-100 text-lg capitalize mt-1">
                   {weather.current.description}
@@ -117,23 +121,23 @@ export default function WeatherPage() {
                 <div className="text-center">
                   <Droplets className="w-6 h-6 mx-auto mb-1 text-blue-200" />
                   <div className="text-2xl font-bold">
-                    {weather.current.humidity}%
+                    {weather.current.humidity_pct}%
                   </div>
                   <p className="text-blue-200 text-xs">Humidity</p>
                 </div>
                 <div className="text-center">
                   <Wind className="w-6 h-6 mx-auto mb-1 text-blue-200" />
                   <div className="text-2xl font-bold">
-                    {weather.current.wind_speed}
+                    {weather.current.wind_speed_kmh}
                   </div>
                   <p className="text-blue-200 text-xs">km/h Wind</p>
                 </div>
                 <div className="text-center">
-                  <Eye className="w-6 h-6 mx-auto mb-1 text-blue-200" />
+                  <Droplets className="w-6 h-6 mx-auto mb-1 text-blue-200" />
                   <div className="text-2xl font-bold">
-                    {weather.current.visibility}
+                    {weather.current.rain_mm}
                   </div>
-                  <p className="text-blue-200 text-xs">km Vis.</p>
+                  <p className="text-blue-200 text-xs">mm Rain</p>
                 </div>
               </div>
             </div>
@@ -158,10 +162,10 @@ export default function WeatherPage() {
                   <div className="flex items-center justify-center gap-1 mb-2">
                     <Thermometer className="w-4 h-4 text-red-400" />
                     <span className="font-bold text-gray-800">
-                      {day.temp_max}°
+                      {day.temp_max_c}°
                     </span>
                     <span className="text-gray-400 text-sm">
-                      {day.temp_min}°
+                      {day.temp_min_c}°
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 capitalize mb-1">
@@ -169,7 +173,7 @@ export default function WeatherPage() {
                   </p>
                   <div className="flex items-center justify-center gap-1 text-xs text-blue-500">
                     <Droplets className="w-3 h-3" />
-                    {day.rain_chance}%
+                    {day.rain_mm}mm
                   </div>
                 </div>
               ))}
@@ -200,10 +204,10 @@ export default function WeatherPage() {
                         </span>
                       </div>
                       <p className="text-sm mt-0.5 opacity-80">
-                        {risk.conditions}
+                        {risk.advisory}
                       </p>
                       <p className="text-xs mt-1">
-                        Affects: {risk.affected_crops.join(", ")}
+                        Affects: {risk.crops.join(", ")}
                       </p>
                     </div>
                   </div>
@@ -228,11 +232,11 @@ export default function WeatherPage() {
                     <CheckCircle2 className="w-5 h-5 text-agri-600 shrink-0 mt-0.5" />
                     <div>
                       <div className="font-medium text-gray-800">
-                        {String(win.date || "")} — {String(win.window || "")}
+                        {String(win.date || "")} — {win.safe_to_spray ? "Safe to spray" : String(win.reason || "Not recommended")}
                       </div>
                       <p className="text-sm text-gray-500">
-                        Wind: {String(win.wind || "")} km/h | Humidity:{" "}
-                        {String(win.humidity || "")}%
+                        Rain: {String(win.rain_mm || 0)} mm | Humidity:{" "}
+                        {String(win.humidity_pct || "")}%
                       </p>
                     </div>
                   </div>
