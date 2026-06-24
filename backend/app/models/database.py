@@ -172,6 +172,111 @@ class VideoTemplate(Base):
     user_id = Column(String(36), nullable=True, index=True)  # NULL = built-in
     created_at = Column(DateTime, default=datetime.utcnow)
 
+# ── Video Project (Long-Form) ────────────────────────────────
+
+class VideoProject(Base):
+    __tablename__ = "video_projects"
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id"), nullable=True)
+    name = Column(String(255), default="Untitled Project")
+    full_script = Column(Text, nullable=False)
+    target_duration_minutes = Column(Float, default=3.0)
+
+    # Avatar identity
+    avatar_photo_path = Column(Text, nullable=False)
+    avatar_voice_path = Column(Text, nullable=True)
+    identity_anchor_id = Column(String(36), nullable=True)
+    identity_anchor_path = Column(Text, nullable=True)
+
+    # Status tracking
+    status = Column(String(20), default="draft")  # draft, analyzing, generating, stitching, completed, failed
+    total_scenes = Column(Integer, default=0)
+    completed_scenes = Column(Integer, default=0)
+
+    # Quality / consistency
+    overall_identity_score = Column(Float, nullable=True)
+    overall_color_score = Column(Float, nullable=True)
+    consistency_report_json = Column(Text, nullable=True)
+
+    # Output
+    output_path = Column(Text, nullable=True)
+    thumbnail_path = Column(Text, nullable=True)
+    total_duration_seconds = Column(Float, nullable=True)
+    file_size_bytes = Column(Integer, nullable=True)
+    processing_time_seconds = Column(Float, nullable=True)
+
+    # Settings (JSON)
+    settings_json = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relations
+    user = relationship("User", backref="projects")
+    scenes = relationship("ProjectScene", back_populates="project", cascade="all, delete-orphan", order_by="ProjectScene.scene_index")
+
+
+class ProjectScene(Base):
+    __tablename__ = "project_scenes"
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    project_id = Column(GUID, ForeignKey("video_projects.id", ondelete="CASCADE"), nullable=False)
+    scene_index = Column(Integer, nullable=False)
+    script_text = Column(Text, nullable=False)
+    duration_seconds = Column(Float, default=30.0)
+    emotion = Column(String(20), default="neutral")
+    background = Column(String(50), default="original")
+    transition_type = Column(String(20), default="crossfade")
+    transition_duration = Column(Float, default=0.5)
+
+    # Status
+    status = Column(String(20), default="pending")  # pending, generating, validating, correcting, completed, failed
+
+    # Output
+    output_path = Column(Text, nullable=True)
+    output_audio_path = Column(Text, nullable=True)
+
+    # Identity / consistency scores
+    identity_score = Column(Float, nullable=True)
+    color_consistency_score = Column(Float, nullable=True)
+    cross_scene_score = Column(Float, nullable=True)
+    drift_frame_count = Column(Integer, default=0)
+    retries = Column(Integer, default=0)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relations
+    project = relationship("VideoProject", back_populates="scenes")
+
+
+# ── Persona (Self-Cloning Agent) ─────────────────────────────
+
+class Persona(Base):
+    __tablename__ = "personas"
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id"), nullable=True)
+    name = Column(String(255), default="My Clone")
+
+    # Identity data paths
+    photo_path = Column(Text, nullable=False)
+    voice_path = Column(Text, nullable=True)
+    identity_anchor_path = Column(Text, nullable=True)
+    voice_embedding_path = Column(Text, nullable=True)
+    style_profile_json = Column(Text, nullable=True)
+
+    # Stats
+    videos_generated = Column(Integer, default=0)
+    avg_identity_score = Column(Float, nullable=True)
+
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relations
+    user = relationship("User", backref="personas")
+
 
 # ── Database Engine ───────────────────────────────────────
 

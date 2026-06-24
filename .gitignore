@@ -47,3 +47,23 @@ logs/
 coverage/
 htmlcov/
 .coverage
+
+# Databases / runtime data
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated media
+*.mp4
+*.mp3
+*.wav
+*.webm
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Notebook build artifacts + extracted zip copies
+notebooks/*.zip
+notebooks/test_extract/
+*.zip

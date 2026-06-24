@@ -469,3 +469,232 @@ export const multiFace = {
     return res.json();
   },
 };
+
+// ── Project (Long-Form) ──
+
+export interface ProjectScene {
+  id: string;
+  scene_index: number;
+  script_text: string;
+  duration_seconds: number;
+  emotion: string;
+  background: string;
+  transition_type: string;
+  status: string;
+  identity_score: number | null;
+  color_consistency_score: number | null;
+  cross_scene_score: number | null;
+  drift_frame_count: number;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  status: string;
+  total_scenes: number;
+  completed_scenes: number;
+  target_duration_minutes: number;
+  overall_identity_score: number | null;
+  overall_color_score: number | null;
+  output_path: string | null;
+  processing_time_seconds: number | null;
+  scenes: ProjectScene[];
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface ProjectProgress {
+  project_id: string;
+  status: string;
+  total_scenes: number;
+  completed_scenes: number;
+  current_scene_index: number | null;
+  current_stage: string | null;
+  overall_identity_score: number | null;
+  progress_percent: number;
+}
+
+export const project = {
+  async create(data: {
+    name: string;
+    script_text: string;
+    target_duration_minutes: number;
+    avatar_config: {
+      photo_path: string;
+      voice_path?: string;
+      voice_id?: string;
+    };
+    consistency_settings?: {
+      identity_threshold?: number;
+      color_threshold?: number;
+      auto_correct?: boolean;
+      strict_mode?: boolean;
+      max_retries?: number;
+    };
+    settings?: {
+      scene_split_method?: string;
+      transition_type?: string;
+      default_emotion?: string;
+      background?: string;
+      enable_b_roll?: boolean;
+    };
+  }): Promise<Project> {
+    const res = await authFetch(`${API_BASE}/api/v1/project/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async get(id: string): Promise<Project> {
+    const res = await authFetch(`${API_BASE}/api/v1/project/${id}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async list(status?: string): Promise<Project[]> {
+    const params = status ? `?status=${status}` : "";
+    const res = await authFetch(`${API_BASE}/api/v1/project/${params}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async generate(id: string): Promise<{ status: string; message: string }> {
+    const res = await authFetch(`${API_BASE}/api/v1/project/${id}/generate`, {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async progress(id: string): Promise<ProjectProgress> {
+    const res = await authFetch(`${API_BASE}/api/v1/project/${id}/progress`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async consistency(id: string): Promise<any> {
+    const res = await authFetch(`${API_BASE}/api/v1/project/${id}/consistency`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async regenerateScene(projectId: string, sceneIndex: number): Promise<any> {
+    const res = await authFetch(
+      `${API_BASE}/api/v1/project/${projectId}/regenerate/${sceneIndex}`,
+      { method: "POST" },
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async delete(id: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/api/v1/project/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error(await res.text());
+  },
+};
+
+// ── Persona (Self-Cloning Agent) ──
+
+export interface PersonaData {
+  id: string;
+  name: string;
+  videos_generated: number;
+  avg_identity_score: number | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export const persona = {
+  async create(data: {
+    name: string;
+    photo_path: string;
+    voice_path?: string;
+  }): Promise<PersonaData> {
+    const res = await authFetch(`${API_BASE}/api/v1/persona/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async list(): Promise<PersonaData[]> {
+    const res = await authFetch(`${API_BASE}/api/v1/persona/`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async get(id: string): Promise<PersonaData> {
+    const res = await authFetch(`${API_BASE}/api/v1/persona/${id}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async generate(
+    personaId: string,
+    data: {
+      script_text?: string;
+      prompt?: string;
+      target_duration_minutes?: number;
+      emotion?: string;
+      background?: string;
+    },
+  ): Promise<{ status: string; project_id: string }> {
+    const res = await authFetch(
+      `${API_BASE}/api/v1/persona/${personaId}/generate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async delete(id: string): Promise<void> {
+    const res = await authFetch(`${API_BASE}/api/v1/persona/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error(await res.text());
+  },
+};
+
+// ── Project WebSocket ──
+
+export function connectProjectWebSocket(
+  projectId: string,
+  onMessage: (data: any) => void,
+  onError?: (error: Event) => void,
+  onClose?: () => void,
+): WebSocket {
+  const wsBase = API_BASE.replace("http", "ws");
+  const ws = new WebSocket(`${wsBase}/api/v1/project/${projectId}/ws`);
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    } catch {
+      console.error("Failed to parse project WebSocket message");
+    }
+  };
+
+  ws.onerror = (event) => {
+    console.error("Project WebSocket error:", event);
+    onError?.(event);
+  };
+
+  ws.onclose = () => {
+    onClose?.();
+  };
+
+  return ws;
+}
+

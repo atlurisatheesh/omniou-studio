@@ -91,5 +91,29 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000"
 
+    # ── Long-Form Video Generation ──
+    MAX_SCENES_PER_JOB: int = 20                    # Safety limit
+    SCENE_DURATION_TARGET_SECONDS: int = 45          # Target per-scene length
+    SCENE_OVERLAP_FRAMES: int = 5                    # Overlap for transitions
+    TRANSITION_DURATION_SECONDS: float = 0.5         # Default transition length
+
+    # ── Character Consistency (Identity Lock) ──
+    IDENTITY_SIMILARITY_THRESHOLD: float = 0.75      # Min face similarity per frame
+    IDENTITY_COLOR_THRESHOLD: float = 0.70           # Min skin color consistency
+    IDENTITY_CROSS_SCENE_THRESHOLD: float = 0.80     # Min similarity between scenes
+    IDENTITY_CHECK_INTERVAL_FRAMES: int = 10         # Check every Nth frame
+    IDENTITY_MAX_RETRIES: int = 2                    # Retries if scene fails identity
+    IDENTITY_CORRECTION_ENABLED: bool = True         # Auto-fix drift frames
+    IDENTITY_STRICT_MODE: bool = False               # Fail job if ANY frame drifts
+
+    # ── Director Agent ──
+    DIRECTOR_SCENE_SPLIT_METHOD: str = "sentence_group"  # "ai" | "paragraph" | "sentence_group"
+    DIRECTOR_LLM_MODEL: str = "llama3.2"             # For AI-driven scene splitting
+
+    # ── Cloud API (B-roll generation) ──
+    LUMA_API_KEY: str = ""
+    FAL_API_KEY: str = ""
+    ENABLE_CLOUD_BROLL: bool = False
+
 
 settings = Settings()

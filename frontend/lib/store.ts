@@ -134,3 +134,145 @@ export const useCloneStore = create<CloneState>((set) => ({
       resultUrl: null,
     }),
 }));
+
+
+// ── Project Store (Long-Form Video) ──
+
+interface SceneConsistency {
+  sceneIndex: number;
+  identityScore: number | null;
+  colorScore: number | null;
+  crossSceneScore: number | null;
+  status: string;
+}
+
+interface ProjectState {
+  // Project data
+  projectId: string | null;
+  projectName: string;
+  projectStatus: string;
+  scenes: any[];
+  activeSceneIndex: number;
+
+  // Identity
+  identityAnchorCreated: boolean;
+  overallIdentityScore: number | null;
+  overallColorScore: number | null;
+
+  // Per-scene consistency
+  sceneConsistency: SceneConsistency[];
+
+  // Generation
+  isGenerating: boolean;
+  generationProgress: number;
+  completedScenes: number;
+  totalScenes: number;
+  currentGeneratingScene: number | null;
+
+  // Output
+  finalVideoPath: string | null;
+  processingTime: number | null;
+
+  // Actions
+  setProject: (id: string, name: string, scenes: any[]) => void;
+  setProjectStatus: (status: string) => void;
+  setActiveScene: (index: number) => void;
+  setSceneConsistency: (consistency: SceneConsistency[]) => void;
+  updateSceneStatus: (index: number, status: string, scores?: Partial<SceneConsistency>) => void;
+  setGenerationProgress: (progress: number, completed: number, current: number | null) => void;
+  setIdentityScores: (identity: number | null, color: number | null) => void;
+  setFinalVideo: (path: string | null, time: number | null) => void;
+  resetProject: () => void;
+}
+
+export const useProjectStore = create<ProjectState>((set) => ({
+  projectId: null,
+  projectName: "",
+  projectStatus: "idle",
+  scenes: [],
+  activeSceneIndex: 0,
+  identityAnchorCreated: false,
+  overallIdentityScore: null,
+  overallColorScore: null,
+  sceneConsistency: [],
+  isGenerating: false,
+  generationProgress: 0,
+  completedScenes: 0,
+  totalScenes: 0,
+  currentGeneratingScene: null,
+  finalVideoPath: null,
+  processingTime: null,
+
+  setProject: (id, name, scenes) =>
+    set({
+      projectId: id,
+      projectName: name,
+      scenes,
+      totalScenes: scenes.length,
+      identityAnchorCreated: true,
+      projectStatus: "draft",
+      sceneConsistency: scenes.map((_: any, i: number) => ({
+        sceneIndex: i,
+        identityScore: null,
+        colorScore: null,
+        crossSceneScore: null,
+        status: "pending",
+      })),
+    }),
+
+  setProjectStatus: (status) => set({ projectStatus: status, isGenerating: status === "generating" }),
+
+  setActiveScene: (index) => set({ activeSceneIndex: index }),
+
+  setSceneConsistency: (consistency) => set({ sceneConsistency: consistency }),
+
+  updateSceneStatus: (index, status, scores) =>
+    set((state) => ({
+      sceneConsistency: state.sceneConsistency.map((sc) =>
+        sc.sceneIndex === index
+          ? { ...sc, status, ...scores }
+          : sc,
+      ),
+    })),
+
+  setGenerationProgress: (progress, completed, current) =>
+    set({
+      generationProgress: progress,
+      completedScenes: completed,
+      currentGeneratingScene: current,
+    }),
+
+  setIdentityScores: (identity, color) =>
+    set({
+      overallIdentityScore: identity,
+      overallColorScore: color,
+    }),
+
+  setFinalVideo: (path, time) =>
+    set({
+      finalVideoPath: path,
+      processingTime: time,
+      isGenerating: false,
+    }),
+
+  resetProject: () =>
+    set({
+      projectId: null,
+      projectName: "",
+      projectStatus: "idle",
+      scenes: [],
+      activeSceneIndex: 0,
+      identityAnchorCreated: false,
+      overallIdentityScore: null,
+      overallColorScore: null,
+      sceneConsistency: [],
+      isGenerating: false,
+      generationProgress: 0,
+      completedScenes: 0,
+      totalScenes: 0,
+      currentGeneratingScene: null,
+      finalVideoPath: null,
+      processingTime: null,
+    }),
+}));
+

@@ -23,6 +23,10 @@ from .routers import analytics as analytics_router
 from .routers import templates as templates_router
 from .routers import streaming as streaming_router
 from .routers import multi_face as multi_face_router
+from .routers import project as project_router
+from .routers import persona as persona_router
+from .routers import quick_generate as quick_generate_router
+from .routers import capture as capture_router
 from .services.model_manager import ModelManager
 from .utils.ws_manager import ws_manager
 
@@ -108,6 +112,10 @@ app.include_router(analytics_router.router, prefix="/api/v1", tags=["Analytics"]
 app.include_router(templates_router.router, prefix="/api/v1", tags=["Templates"])
 app.include_router(streaming_router.router, prefix="/api/v1", tags=["Streaming"])
 app.include_router(multi_face_router.router, prefix="/api/v1", tags=["MultiFace"])
+app.include_router(project_router.router, prefix="/api/v1", tags=["Project"])
+app.include_router(persona_router.router, prefix="/api/v1", tags=["Persona"])
+app.include_router(quick_generate_router.router, prefix="/api/v1", tags=["QuickGenerate"])
+app.include_router(capture_router.router, prefix="/api/v1", tags=["Capture"])
 
 
 @app.get("/")

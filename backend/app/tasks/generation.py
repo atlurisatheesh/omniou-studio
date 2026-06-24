@@ -10,31 +10,51 @@ import time
 from pathlib import Path
 
 import structlog
-from celery import Celery
 
 from ..config import settings
 
 logger = structlog.get_logger()
 
-# ── Celery App ──
-celery_app = Celery(
-    "cloneai",
-    broker=settings.CELERY_BROKER_URL,
-    backend=settings.CELERY_RESULT_BACKEND,
-)
+# ── Celery App (optional — falls back to sync in dev mode) ──
+try:
+    from celery import Celery
 
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
-    task_track_started=True,
-    task_acks_late=True,
-    worker_prefetch_multiplier=1,  # One task at a time (GPU constraint)
-    task_soft_time_limit=600,  # 10 min soft limit
-    task_time_limit=900,  # 15 min hard limit
-)
+    celery_app = Celery(
+        "cloneai",
+        broker=settings.CELERY_BROKER_URL,
+        backend=settings.CELERY_RESULT_BACKEND,
+    )
+
+    celery_app.conf.update(
+        task_serializer="json",
+        accept_content=["json"],
+        result_serializer="json",
+        timezone="UTC",
+        enable_utc=True,
+        task_track_started=True,
+        task_acks_late=True,
+        worker_prefetch_multiplier=1,
+        task_soft_time_limit=600,
+        task_time_limit=900,
+    )
+except (ImportError, Exception) as _celery_err:
+    logger.warning("celery.not_available", error=str(_celery_err))
+    celery_app = None
+
+    # Stub decorator so task functions still resolve
+    class _FakeTask:
+        def task(self, *a, **kw):
+            def wrapper(fn):
+                fn.delay = fn
+                fn.apply_async = lambda *a, **kw: fn(*a, **kw)
+                return fn
+            return wrapper
+
+    class _FakeCelery:
+        def task(self, *a, **kw):
+            return _FakeTask().task(*a, **kw)
+
+    celery_app = _FakeCelery()
 
 
 def _publish_progress(job_id: str, data: dict):

@@ -11,7 +11,13 @@ from pathlib import Path
 from typing import Any, Optional
 
 import structlog
-import torch
+
+try:
+    import torch
+    _HAS_TORCH = True
+except ImportError:
+    torch = None
+    _HAS_TORCH = False
 
 logger = structlog.get_logger()
 
@@ -26,16 +32,19 @@ class ModelManager:
     """
 
     def __init__(self, device: str = "cuda", model_cache_dir: str = "./models"):
-        self.device = device if torch.cuda.is_available() else "cpu"
+        if _HAS_TORCH:
+            self.device = device if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = "cpu"
         self.model_cache_dir = model_cache_dir
         self._models: dict[str, Any] = {}
 
-        if self.device == "cuda":
+        if _HAS_TORCH and self.device == "cuda":
             gpu_name = torch.cuda.get_device_name(0)
             gpu_mem = torch.cuda.get_device_properties(0).total_mem / (1024**3)
             logger.info("model_manager.init", device=self.device, gpu=gpu_name, vram_gb=round(gpu_mem, 1))
         else:
-            logger.warning("model_manager.init", device="cpu", msg="No GPU detected. Inference will be slower.")
+            logger.warning("model_manager.init", device="cpu", msg="No GPU/torch detected. Inference will be slower.")
 
     def get_model(self, model_name: str) -> Optional[Any]:
         return self._models.get(model_name)
@@ -226,7 +235,7 @@ class ModelManager:
         """Unload a specific model to free memory."""
         if model_name in self._models:
             del self._models[model_name]
-            if self.device == "cuda":
+            if _HAS_TORCH and self.device == "cuda":
                 torch.cuda.empty_cache()
             gc.collect()
             logger.info("model_manager.unloaded", model=model_name)
@@ -240,8 +249,8 @@ class ModelManager:
 
     def gpu_memory_status(self) -> dict:
         """Get current GPU memory usage."""
-        if self.device != "cuda":
-            return {"device": "cpu", "gpu_available": False}
+        if not _HAS_TORCH or self.device != "cuda":
+            return {"device": "cpu", "gpu_available": False, "models_loaded": list(self._models.keys())}
 
         allocated = torch.cuda.memory_allocated() / (1024**3)
         reserved = torch.cuda.memory_reserved() / (1024**3)
