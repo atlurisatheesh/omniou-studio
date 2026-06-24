@@ -49,12 +49,12 @@ export default function SettingsPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-surface-400">Full Name</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-brand-500" />
+                <label htmlFor="settings-name" className="text-sm text-surface-400">Full Name</label>
+                <input id="settings-name" value={name} onChange={(e) => setName(e.target.value)} className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-brand-500" />
               </div>
               <div>
-                <label className="text-sm text-surface-400">Email</label>
-                <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-brand-500" />
+                <label htmlFor="settings-email" className="text-sm text-surface-400">Email</label>
+                <input id="settings-email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-brand-500" />
               </div>
             </div>
             <button className="mt-4 px-6 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition">
@@ -65,9 +65,9 @@ export default function SettingsPage() {
           <div className="glass rounded-xl p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
             <div className="space-y-3 max-w-sm">
-              <input type="password" placeholder="Current password" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500" />
-              <input type="password" placeholder="New password" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500" />
-              <input type="password" placeholder="Confirm new password" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500" />
+              <input type="password" placeholder="Current password" aria-label="Current password" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500" />
+              <input type="password" placeholder="New password" aria-label="New password" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500" />
+              <input type="password" placeholder="Confirm new password" aria-label="Confirm new password" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg px-4 py-2.5 text-white placeholder:text-surface-600 focus:outline-none focus:border-brand-500" />
             </div>
             <button className="mt-4 px-6 py-2.5 rounded-lg bg-[#1a1a2e] text-surface-300 text-sm hover:text-white transition">
               Update Password

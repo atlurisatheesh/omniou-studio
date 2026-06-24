@@ -27,7 +27,7 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("ominou_token", data.access_token);
       window.location.href = "/dashboard";
     } catch {
       setError("Connection error. Please try again.");

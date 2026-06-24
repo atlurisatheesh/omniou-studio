@@ -31,19 +31,19 @@ class DubRequest(BaseModel):
 
 @router.post("/tts")
 async def generate_speech(req: TTSRequest, user: dict = Depends(get_current_user)):
-    result = text_to_speech(req.text, req.voice_id, req.speed, req.pitch)
+    result = await text_to_speech(req.text, req.voice_id, req.speed, req.pitch)
     return {"success": True, "credits_used": 1, "data": result}
 
 
 @router.post("/clone")
 async def clone_voice_endpoint(req: CloneRequest, user: dict = Depends(get_current_user)):
-    result = clone_voice(req.audio_urls, req.voice_name)
+    result = await clone_voice(req.audio_urls, req.voice_name)
     return {"success": True, "credits_used": 5, "data": result}
 
 
 @router.post("/dub")
 async def dub_endpoint(req: DubRequest, user: dict = Depends(get_current_user)):
-    result = dub_audio(req.text, req.target_language, req.voice_id)
+    result = await dub_audio(req.text, req.target_language, req.voice_id)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     return {"success": True, "credits_used": 10, "data": result}

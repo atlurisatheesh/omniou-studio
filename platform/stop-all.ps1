@@ -1,8 +1,8 @@
-# Stop all Ominou Studio services
-Write-Host "Stopping Ominou Studio services..." -ForegroundColor Red
+# Stop all Ominou Studio servers
+Write-Host "Stopping Ominou Studio servers..." -ForegroundColor Red
 
-# Kill processes on specific ports
-$ports = @(8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8080)
+# Kill processes on the two server ports
+$ports = @(1993, 2102)
 foreach ($port in $ports) {
     $connections = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
     foreach ($conn in $connections) {
@@ -13,4 +13,4 @@ foreach ($port in $ports) {
     }
 }
 
-Write-Host "All services stopped." -ForegroundColor Green
+Write-Host "All servers stopped." -ForegroundColor Green

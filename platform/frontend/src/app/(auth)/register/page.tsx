@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
       if (loginRes.ok) {
         const data = await loginRes.json();
-        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("ominou_token", data.access_token);
         window.location.href = "/dashboard";
       } else {
         window.location.href = "/login";

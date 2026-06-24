@@ -30,25 +30,25 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 // ─── Auth ─────────────────────────────────
 export const auth = {
   register: (email: string, password: string, full_name: string) =>
-    request("/auth/auth/register", { method: "POST", body: JSON.stringify({ email, password, full_name }) }),
+    request("/auth/register", { method: "POST", body: JSON.stringify({ email, password, full_name }) }),
 
   login: (email: string, password: string) =>
-    request("/auth/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+    request("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
 
-  me: () => request("/auth/auth/me"),
+  me: () => request("/auth/me"),
 
   updateProfile: (data: Record<string, string>) =>
-    request("/auth/users/profile", { method: "PUT", body: JSON.stringify(data) }),
+    request("/auth/profile", { method: "PUT", body: JSON.stringify(data) }),
 
-  getCredits: () => request("/auth/users/credits"),
+  getCredits: () => request("/auth/credits"),
 
   createApiKey: (name: string) =>
-    request("/auth/users/api-keys", { method: "POST", body: JSON.stringify({ name }) }),
+    request("/auth/api-keys", { method: "POST", body: JSON.stringify({ name }) }),
 
-  listApiKeys: () => request("/auth/users/api-keys"),
+  listApiKeys: () => request("/auth/api-keys"),
 
   deleteApiKey: (id: number) =>
-    request(`/auth/users/api-keys/${id}`, { method: "DELETE" }),
+    request(`/auth/api-keys/${id}`, { method: "DELETE" }),
 };
 
 // ─── Voice Studio ─────────────────────────

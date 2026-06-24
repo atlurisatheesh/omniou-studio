@@ -38,19 +38,19 @@ class RemixRequest(BaseModel):
 
 @router.post("/generate")
 async def generate(req: MusicRequest, user: dict = Depends(get_current_user)):
-    result = generate_music(req.prompt, req.genre, req.mood, req.duration_seconds, req.bpm)
+    result = await generate_music(req.prompt, req.genre, req.mood, req.duration_seconds, req.bpm)
     return {"success": True, "credits_used": 5, "data": result}
 
 
 @router.post("/jingle")
 async def jingle(req: JingleRequest, user: dict = Depends(get_current_user)):
-    result = generate_jingle(req.brand_name, req.style, req.duration_seconds)
+    result = await generate_jingle(req.brand_name, req.style, req.duration_seconds)
     return {"success": True, "credits_used": 5, "data": result}
 
 
 @router.post("/sfx")
 async def sfx(req: SFXRequest, user: dict = Depends(get_current_user)):
-    result = generate_sfx(req.category, req.effect)
+    result = await generate_sfx(req.category, req.effect)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     return {"success": True, "credits_used": 2, "data": result}
@@ -58,7 +58,7 @@ async def sfx(req: SFXRequest, user: dict = Depends(get_current_user)):
 
 @router.post("/remix")
 async def remix(req: RemixRequest, user: dict = Depends(get_current_user)):
-    result = remix_audio(req.audio_url, req.genre, req.tempo_change)
+    result = await remix_audio(req.audio_url, req.genre, req.tempo_change)
     return {"success": True, "credits_used": 3, "data": result}
 
 

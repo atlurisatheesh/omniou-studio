@@ -1,7 +1,7 @@
 """Quick test script for all Ominou Studio services via gateway."""
 import httpx
 
-BASE = "http://localhost:8080/api/v1"
+BASE = "http://localhost:1993/api/v1"
 passed = 0
 failed = 0
 

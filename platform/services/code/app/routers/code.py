@@ -41,25 +41,25 @@ class DeployRequest(BaseModel):
 async def generate(req: GenerateCodeRequest, user: dict = Depends(get_current_user)):
     if req.language not in SUPPORTED_LANGUAGES:
         raise HTTPException(status_code=400, detail=f"Language '{req.language}' not supported")
-    result = generate_code(req.prompt, req.language, req.context)
+    result = await generate_code(req.prompt, req.language, req.context)
     return {"success": True, "credits_used": 2, "data": result}
 
 
 @router.post("/explain")
 async def explain(req: ExplainRequest, user: dict = Depends(get_current_user)):
-    result = explain_code(req.code, req.language)
+    result = await explain_code(req.code, req.language)
     return {"success": True, "credits_used": 1, "data": result}
 
 
 @router.post("/refactor")
 async def refactor(req: RefactorRequest, user: dict = Depends(get_current_user)):
-    result = refactor_code(req.code, req.language, req.instructions)
+    result = await refactor_code(req.code, req.language, req.instructions)
     return {"success": True, "credits_used": 2, "data": result}
 
 
 @router.post("/project")
 async def new_project(req: ProjectRequest, user: dict = Depends(get_current_user)):
-    result = create_project(req.template, req.name)
+    result = await create_project(req.template, req.name)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     return {"success": True, "credits_used": 0, "data": result}
@@ -67,7 +67,7 @@ async def new_project(req: ProjectRequest, user: dict = Depends(get_current_user
 
 @router.post("/deploy")
 async def deploy(req: DeployRequest, user: dict = Depends(get_current_user)):
-    result = deploy_project(req.project_id)
+    result = await deploy_project(req.project_id)
     return {"success": True, "credits_used": 5, "data": result}
 
 

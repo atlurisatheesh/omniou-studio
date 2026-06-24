@@ -34,7 +34,7 @@ class SEORequest(BaseModel):
 
 @router.post("/generate")
 async def generate(req: ContentRequest, user: dict = Depends(get_current_user)):
-    result = generate_content(req.content_type, req.topic, req.tone, req.keywords, req.target_audience, req.word_count)
+    result = await generate_content(req.content_type, req.topic, req.tone, req.keywords, req.target_audience, req.word_count)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     credits = CONTENT_TYPES.get(req.content_type, {}).get("credits", 1)
@@ -43,13 +43,13 @@ async def generate(req: ContentRequest, user: dict = Depends(get_current_user)):
 
 @router.post("/rewrite")
 async def rewrite(req: RewriteRequest, user: dict = Depends(get_current_user)):
-    result = rewrite_content(req.content, req.tone, req.instructions)
+    result = await rewrite_content(req.content, req.tone, req.instructions)
     return {"success": True, "credits_used": 2, "data": result}
 
 
 @router.post("/seo")
 async def seo(req: SEORequest, user: dict = Depends(get_current_user)):
-    result = generate_seo(req.url, req.topic, req.keywords)
+    result = await generate_seo(req.url, req.topic, req.keywords)
     return {"success": True, "credits_used": 2, "data": result}
 
 

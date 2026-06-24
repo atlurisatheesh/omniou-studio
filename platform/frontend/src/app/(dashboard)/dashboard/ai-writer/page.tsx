@@ -131,6 +131,7 @@ export default function WriterPage() {
               <select
                 value={tone}
                 onChange={(e) => setTone(e.target.value)}
+                aria-label="Tone"
                 className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-3 py-2 text-white text-sm"
               >
                 {tones.map((t) => (
@@ -139,8 +140,9 @@ export default function WriterPage() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-surface-400">Word count: ~{wordCount}</label>
+              <label className="text-xs text-surface-400" htmlFor="word-count">Word count: ~{wordCount}</label>
               <input
+                id="word-count"
                 type="range"
                 min={100}
                 max={3000}

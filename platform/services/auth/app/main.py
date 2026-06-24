@@ -26,8 +26,8 @@ app.add_middleware(
 
 from .routers import auth_router, users_router
 
-app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(users_router, prefix="/api/users", tags=["Users"])
+app.include_router(auth_router, prefix="/api", tags=["Authentication"])
+app.include_router(users_router, prefix="/api", tags=["Users"])
 
 
 @app.get("/health")

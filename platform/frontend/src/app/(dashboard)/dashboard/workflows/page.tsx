@@ -84,6 +84,7 @@ export default function WorkflowsPage() {
                       className={`h-full rounded-full transition-all ${
                         wf.status === "completed" ? "bg-blue-500" : "bg-brand-500"
                       }`}
+                      title={`Progress: ${wf.progress}%`}
                       style={{ width: `${wf.progress}%` }}
                     />
                   </div>

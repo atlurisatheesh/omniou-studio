@@ -2,6 +2,7 @@
 
 Routes all requests to the appropriate microservice.
 Handles rate limiting, CORS, and request logging.
+Video service is mounted directly (no separate process needed).
 """
 import time
 import httpx
@@ -11,6 +12,7 @@ from collections import defaultdict
 import sys, os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "services", "video"))
 from shared.config import settings
 
 app = FastAPI(
@@ -21,11 +23,21 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "https://ominou.studio"],
+    allow_origins=["http://localhost:2102", "http://localhost:3000", "https://ominou.studio"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Mount Video Service directly ──────────────────────────────────
+from app.routers.video import router as video_router
+app.include_router(video_router, prefix="/api/v1/video", tags=["video"])
+
+# ── Serve generated video/audio files ─────────────────────────────
+from fastapi.staticfiles import StaticFiles
+_storage_path = os.path.join(os.path.dirname(__file__), "..", "services", "video", "storage")
+os.makedirs(_storage_path, exist_ok=True)
+app.mount("/storage", StaticFiles(directory=os.path.abspath(_storage_path)), name="storage")
 
 # Simple in-memory rate limiter (use Redis in production)
 rate_limit_store: dict[str, list[float]] = defaultdict(list)
@@ -79,6 +91,10 @@ async def health():
 
 @app.api_route("/api/v1/{service}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def proxy(service: str, path: str, request: Request):
+    # Video is mounted directly — skip proxy for it
+    if service == "video":
+        raise HTTPException(status_code=404, detail="Video routes are mounted directly, not proxied")
+
     client_ip = request.client.host if request.client else "unknown"
     if not check_rate_limit(client_ip):
         raise HTTPException(status_code=429, detail="Rate limit exceeded. Try again later.")
@@ -93,7 +109,7 @@ async def proxy(service: str, path: str, request: Request):
 
     body = await request.body()
 
-    async with httpx.AsyncClient(timeout=120.0) as client:
+    async with httpx.AsyncClient(timeout=600.0) as client:
         try:
             response = await client.request(
                 method=request.method,
@@ -116,4 +132,4 @@ async def proxy(service: str, path: str, request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=1993)

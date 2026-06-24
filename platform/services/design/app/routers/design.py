@@ -39,25 +39,25 @@ class TemplateRequest(BaseModel):
 
 @router.post("/generate")
 async def generate(req: GenerateRequest, user: dict = Depends(get_current_user)):
-    result = generate_image(req.prompt, req.style, req.width, req.height, req.negative_prompt)
+    result = await generate_image(req.prompt, req.style, req.width, req.height, req.negative_prompt)
     return {"success": True, "credits_used": 3, "data": result}
 
 
 @router.post("/remove-background")
 async def remove_bg(req: RemoveBgRequest, user: dict = Depends(get_current_user)):
-    result = remove_background(req.image_url)
+    result = await remove_background(req.image_url)
     return {"success": True, "credits_used": 2, "data": result}
 
 
 @router.post("/upscale")
 async def upscale(req: UpscaleRequest, user: dict = Depends(get_current_user)):
-    result = upscale_image(req.image_url, req.scale)
+    result = await upscale_image(req.image_url, req.scale)
     return {"success": True, "credits_used": 2, "data": result}
 
 
 @router.post("/from-template")
 async def from_template(req: TemplateRequest, user: dict = Depends(get_current_user)):
-    result = create_from_template(req.template_id, req.category, req.customizations)
+    result = await create_from_template(req.template_id, req.category, req.customizations)
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
     return {"success": True, "credits_used": 1, "data": result}

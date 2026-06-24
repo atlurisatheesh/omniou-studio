@@ -97,12 +97,13 @@ export default function VoiceStudioPage() {
                   value={speed}
                   onChange={(e) => setSpeed(parseFloat(e.target.value))}
                   className="w-full"
+                  aria-label="Speed"
                 />
                 <div className="text-xs text-surface-500 mt-1">{speed}x</div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-surface-400 mb-2">Format</label>
-                <select className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg p-2.5 text-white text-sm">
+                <select aria-label="Audio format" className="w-full bg-[#12121a] border border-[#2a2a4a] rounded-lg p-2.5 text-white text-sm">
                   <option>MP3 (recommended)</option>
                   <option>WAV (high quality)</option>
                   <option>OGG</option>

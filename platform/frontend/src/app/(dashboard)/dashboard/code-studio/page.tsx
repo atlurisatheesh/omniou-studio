@@ -150,6 +150,7 @@ main();`,
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
+                  aria-label="Programming language"
                   className="bg-[#12121a] border border-[#2a2a4a] rounded-lg px-3 py-1.5 text-white text-xs"
                 >
                   {languages.map((l) => (

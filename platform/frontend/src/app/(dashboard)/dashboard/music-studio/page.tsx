@@ -93,7 +93,7 @@ export default function MusicStudioPage() {
               </div>
               <div>
                 <label className="text-xs text-surface-400">Remix Style</label>
-                <select className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-3 py-2 text-white text-sm">
+                <select aria-label="Remix style" className="w-full mt-1 bg-[#12121a] border border-[#2a2a4a] rounded-lg px-3 py-2 text-white text-sm">
                   <option>EDM Remix</option>
                   <option>Lo-fi Version</option>
                   <option>Acoustic Cover</option>
@@ -156,12 +156,12 @@ export default function MusicStudioPage() {
 
               <div className="glass rounded-xl p-4 space-y-3">
                 <div>
-                  <label className="text-xs text-surface-400">Duration: {duration}s</label>
-                  <input type="range" min={5} max={180} value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full accent-brand-500" />
+                  <label className="text-xs text-surface-400" htmlFor="music-duration">Duration: {duration}s</label>
+                  <input id="music-duration" type="range" min={5} max={180} value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full accent-brand-500" />
                 </div>
                 <div>
-                  <label className="text-xs text-surface-400">BPM: {bpm}</label>
-                  <input type="range" min={60} max={200} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full accent-brand-500" />
+                  <label className="text-xs text-surface-400" htmlFor="music-bpm">BPM: {bpm}</label>
+                  <input id="music-bpm" type="range" min={60} max={200} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full accent-brand-500" />
                 </div>
               </div>
             </>
@@ -188,6 +188,7 @@ export default function MusicStudioPage() {
                       <div
                         key={i}
                         className="w-1.5 bg-brand-500 rounded-full animate-pulse"
+                        role="presentation"
                         style={{ height: `${20 + Math.random() * 60}px`, animationDelay: `${i * 0.1}s` }}
                       />
                     ))}
@@ -201,6 +202,7 @@ export default function MusicStudioPage() {
                       <div
                         key={i}
                         className="w-1 bg-gradient-to-t from-brand-600 to-purple-400 rounded-full"
+                        role="presentation"
                         style={{ height: `${10 + Math.sin(i * 0.3) * 30 + Math.random() * 20}px` }}
                       />
                     ))}
